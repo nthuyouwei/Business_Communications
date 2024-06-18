@@ -114,3 +114,46 @@ for i in range(100):
     if prev_trajectory[i] !=0:
 
         print('index', i, 'movement', prev_trajectory[i])
+
+
+
+################## MDP   #############
+import numpy as np
+
+def run_value_iteration(states, actions, rewards, transition, discount_factor=0.9, theta=0.0001):
+    V = np.zeros(len(states))  # Initialize all state values to zero
+    policy = np.zeros((len(states), len(actions)))  # Initialize policy
+
+    while True:
+        delta = 0
+        for s in states:
+            v = V[s]
+            # Update each state's value based on the best possible action
+            V[s] = max(sum([transition[s][a][s_prime] * (rewards[s][a] + discount_factor * V[s_prime])
+                            for s_prime in states]) for a in actions)
+            delta = max(delta, abs(v - V[s]))
+        if delta < theta:
+            break
+
+    for s in states:
+        # Update policy to perform the best action in each state
+        action_values = np.array([sum([transition[s][a][s_prime] * (rewards[s][a] + discount_factor * V[s_prime])
+                                       for s_prime in states]) for a in actions])
+        best_action = np.argmax(action_values)
+        policy[s] = np.eye(len(actions))[best_action]
+
+    return policy, V
+
+# Example usage for a very simple scenario:
+states = list(range(100))  # States are indexed from 0 to 99
+actions = ['up', 'right', 'down', 'left']  # Possible actions
+rewards = np.full((100, 4), -1.0)  # Default reward is -1
+transition = {}  # Define your transition probabilities here
+
+# Add custom logic for transitions and rewards based on your grid's specifics
+
+# Run Value Iteration
+policy, values = run_value_iteration(states, actions, rewards, transition)
+
+print("Optimal Policy:", policy)
+print("State Values:", values)
